@@ -216,11 +216,11 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 <!-- PLAYER MODAL -->
 <div class="overlay" id="pModal">
   <div class="modal" style="text-align:center">
-    <div class="modal-icon">🧩</div>
+    <div class="logo-dot"><img src="LOGO WEL.png" style="width:18px;height:18px;object-fit:contain"></div>
     <h2>Chào mừng!</h2>
     <p>Nhập tên để tham gia. Đồng hồ bắt đầu khi bạn nhấn <strong>Vào chơi</strong>.</p>
     <input type="text" id="pName" placeholder="Tên của bạn..." maxlength="30" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')savePlayer()">
-    <input type="text" id="pDept" placeholder="Phòng ban (tuỳ chọn)" maxlength="30" style="margin-bottom:16px">
+    <input type="text" id="pDept" placeholder="Phòng ban" maxlength="30" style="margin-bottom:16px">
     <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:12px" onclick="savePlayer()">Vào chơi →</button>
   </div>
 </div>
