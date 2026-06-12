@@ -346,6 +346,12 @@ function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
+  if(name==='play'){
+    const gameView=document.getElementById('gameView');
+    if(!gameView||gameView.style.display==='none'||gameView.style.display===''){
+      document.getElementById('listView').style.display='block';
+    }
+  }
 }
 
 // ── FETCH ALL ACTIVE CHALLENGES ─────────────────────────────
