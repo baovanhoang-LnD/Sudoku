@@ -349,6 +349,8 @@ function switchTab(name,el){
   if(name==='play'){
     document.getElementById('listView').style.display='block';
     document.getElementById('gameView').style.display='none';
+    if(S.interval){ clearInterval(S.interval); }
+    if(window._bbTimer){ clearInterval(window._bbTimer); }
     fetchChallenges();
   }
 }
