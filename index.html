@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OhM!nd Lab</title>
+<link rel="icon" type="image/png" href="Favicon1.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -216,11 +217,13 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 <!-- PLAYER MODAL -->
 <div class="overlay" id="pModal">
   <div class="modal" style="text-align:center">
-    <div class="logo-dot"><img src="LOGO WEL.png" style="width:18px;height:18px;object-fit:contain"></div>
+    <div class="modal-icon">
+      <img src="LOGO WEL.png" style="width:60px;height:60px;object-fit:contain;border-radius:12px">
+    </div>
     <h2>Chào mừng!</h2>
     <p>Nhập tên để tham gia. Đồng hồ bắt đầu khi bạn nhấn <strong>Vào chơi</strong>.</p>
     <input type="text" id="pName" placeholder="Tên của bạn..." maxlength="30" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')savePlayer()">
-    <input type="text" id="pDept" placeholder="Phòng ban" maxlength="30" style="margin-bottom:16px">
+    <input type="text" id="pDept" placeholder="Phòng ban (tuỳ chọn)" maxlength="30" style="margin-bottom:16px">
     <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:12px" onclick="savePlayer()">Vào chơi →</button>
   </div>
 </div>
@@ -239,7 +242,9 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 </div>
 
 <header>
-  <div class="logo"><div class="logo-dot">🧩</div>OhM!nd Lab</div>
+  <div class="logo">
+    <img src="OhM!nd Lab.png" style="height:36px;object-fit:contain">
+  </div>
   <div class="player-chip" id="playerChip" onclick="changePlayer()" style="display:none">
     <div class="chip-av" id="chipAv">?</div>
     <span id="hName">Khách</span>
@@ -279,7 +284,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
   <div id="page-lb" class="page">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div class="card-label" style="margin:0">🏆 Bảng xếp hạng — tất cả ván</div>
+        <div class="card-label" style="margin:0">🏆 Bảng xếp hạng - tất cả ván</div>
         <button class="btn btn-secondary btn-sm" onclick="loadAllLB()">🔄 Refresh</button>
       </div>
       <div id="lbContent"><div style="text-align:center;padding:40px;color:var(--t3)">Đang tải...</div></div>
