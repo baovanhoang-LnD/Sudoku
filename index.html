@@ -26,7 +26,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 #app{position:relative;z-index:1;}
 
 /* HEADER */
-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);overflow:hidden;}
+header{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
 .logo{font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px;}
 .logo-dot{width:28px;height:28px;background:var(--orange);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
 .player-chip{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
@@ -34,7 +34,7 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 3
 .chip-av{width:22px;height:22px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700;}
 
 /* TABS */
-.tabs{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;display:flex;position:sticky;top:60px;z-index:99;}
+.tabs{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;display:flex;}
 .tab{padding:14px 20px;font-family:var(--sans);font-weight:700;font-size:13px;cursor:pointer;background:none;border:none;color:var(--t3);border-bottom:3px solid transparent;transition:all .2s;margin-bottom:-1px;}
 .tab:hover{color:var(--text);}
 .tab.active{color:var(--orange);border-bottom-color:var(--orange);}
@@ -111,7 +111,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 .stats-row{display:flex;gap:8px;flex-wrap:wrap;}
 .stat-chip{background:var(--bg);border:1.5px solid var(--border);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--t2);}
 .stat-chip.err{background:var(--rl);border-color:#f5b5b5;color:var(--red);}
-.stat-chip.hint{background:var(--bl);border-color:#bfdbfe;color:var(--blue);}
+
 
 /* GRID */
 .sudoku-grid-wrap{flex:0 0 auto;}
@@ -160,11 +160,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
 /* ACTION AREA */
 .action-area{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-.hint-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bl);border:1.5px solid #bfdbfe;border-radius:10px;padding:10px 14px;}
-.hint-info{font-size:12px;color:var(--blue);font-weight:600;}
-.hint-dots{display:flex;gap:4px;}
-.hdot{width:10px;height:10px;border-radius:50%;background:#bfdbfe;transition:background .2s;}
-.hdot.used{background:var(--blue);}
+
 
 .tips-box{background:var(--bg);border-radius:10px;padding:12px;font-size:12px;color:var(--t2);line-height:1.7;}
 
@@ -243,7 +239,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
 <header>
   <div class="logo">
-    <img src="OhM!nd Lab.png" style="height:80px;object-fit:contain";overflow:hidden>
+    <img src="OhM!nd Lab.png" style="height:180px;object-fit:contain">
   </div>
   <div class="player-chip" id="playerChip" onclick="changePlayer()" style="display:none">
     <div class="chip-av" id="chipAv">?</div>
@@ -253,7 +249,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('play',this)">🎮 Chơi ngay</button>
-  <button class="tab" onclick="switchTab('lb',this)">🏆 Xếp hạng</button>
+  <button class="tab" onclick="switchTab('lb',this);loadAllLB()">🏆 Xếp hạng</button>
 </div>
 
 <div class="main">
@@ -282,13 +278,20 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
   <!-- LEADERBOARD PAGE -->
   <div id="page-lb" class="page">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div class="card-label" style="margin:0">🏆 Bảng xếp hạng - tất cả ván</div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:140px;margin-bottom:0;text-align:center;padding:18px">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:500;color:var(--orange)" id="lbTotalPlays">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:4px">Tổng lượt chơi</div>
+      </div>
+      <div class="card" style="flex:1;min-width:140px;margin-bottom:0;text-align:center;padding:18px">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:500;color:var(--orange)" id="lbTotalPlayers">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:4px">Số người chơi</div>
+      </div>
+      <div style="display:flex;align-items:center;margin-left:auto">
         <button class="btn btn-secondary btn-sm" onclick="loadAllLB()">🔄 Refresh</button>
       </div>
-      <div id="lbContent"><div style="text-align:center;padding:40px;color:var(--t3)">Đang tải...</div></div>
     </div>
+    <div id="lbContent"><div style="text-align:center;padding:40px;color:var(--t3)">Đang tải...</div></div>
   </div>
 
 </div>
@@ -352,9 +355,6 @@ function switchTab(name,el){
     if(S.interval){ clearInterval(S.interval); }
     if(window._bbTimer){ clearInterval(window._bbTimer); }
     fetchChallenges();
-  }
-  if(name==='lb'){
-    loadAllLB().catch(e=>console.error(e));
   }
 }
 
@@ -463,7 +463,7 @@ function initSudoku(ch, container){
           <div class="game-timer" id="sTimer">00:00</div>
           <div class="stats-row">
             <div class="stat-chip err">❌ <span id="sErr">0</span> lỗi</div>
-            <div class="stat-chip hint">💡 <span id="sHint">3</span> hint còn</div>
+
           </div>
         </div>
         <div class="sudoku-grid" id="sGrid"></div>
@@ -476,24 +476,13 @@ function initSudoku(ch, container){
         </div>
         <div class="ctrl-label">Bàn phím số</div>
         <div class="numpad" id="sNumpad"></div>
-        <div class="action-area">
-          <div class="hint-bar">
-            <div>
-              <div class="hint-info">💡 Hint — hé lộ ô đang chọn</div>
-              <div class="hint-dots" id="hintDots">
-                <div class="hdot" id="hd0"></div>
-                <div class="hdot" id="hd1"></div>
-                <div class="hdot" id="hd2"></div>
-              </div>
-            </div>
-            <button class="btn btn-hint btn-sm" id="hintBtn" onclick="useHint()">Dùng hint</button>
-          </div>
-        </div>
+
         <div class="tips-box">
           💡 <strong>Số đúng</strong> sẽ cố định (màu xanh), không sửa được<br>
           💡 <strong>Phím P</strong> chuyển chế độ bút chì<br>
           💡 <strong>Click số</strong> để highlight vị trí số đó<br>
-          💡 <strong>Mũi tên</strong> di chuyển ô
+          💡 <strong>Mũi tên</strong> di chuyển ô<br>
+          💡 <strong>Xếp hạng</strong> theo thời gian, ít lỗi hơn sẽ xếp trước nếu cùng thời gian
         </div>
       </div>
     </div>`;
@@ -644,47 +633,11 @@ function clearPencil(){
   renderSGrid();
 }
 
-// ── HINT ────────────────────────────────────────────────────
-function useHint(){
-  if(S.hints>=S.maxHints){showToast('Đã hết hint!','bad');return;}
-  if(!S.selected){showToast('Chọn ô muốn hint trước!','info');return;}
-  const{r,c}=S.selected;
-  const isGiven=S.origBoard[r][c]!==0;
-  const isFixed=S.fixedCells[r][c];
-  if(isGiven||isFixed){showToast('Ô này đã có số rồi!','info');return;}
-  if(S.board[r][c]===S.solution[r][c]&&S.board[r][c]!==0){showToast('Ô này đúng rồi!','ok');return;}
-
-  // Reveal correct answer
-  const ans=S.solution[r][c];
-  S.board[r][c]=ans;
-  S.fixedCells[r][c]=true;
-  S.pencilNotes[r][c].clear();
-  autoRemovePencil(r,c,ans);
-  S.hints++;
-
-  // Update hint UI
-  const hintEl=document.getElementById('sHint');if(hintEl)hintEl.textContent=S.maxHints-S.hints;
-  const dot=document.getElementById('hd'+(S.hints-1));if(dot)dot.classList.add('used');
-  if(S.hints>=S.maxHints){const btn=document.getElementById('hintBtn');if(btn)btn.disabled=true;}
-
-  showToast(`💡 Hint! Còn ${S.maxHints-S.hints} lần`,'info');
-  renderSGrid(); checkSWin();
-}
-
-function updateHintUI(){
-  for(let i=0;i<3;i++){
-    const d=document.getElementById('hd'+i);
-    if(d)d.classList.toggle('used',i<S.hints);
-  }
-  const btn=document.getElementById('hintBtn');
-  if(btn)btn.disabled=S.hints>=S.maxHints;
-}
-
 function checkSWin(){
   for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(S.board[r][c]!==S.solution[r][c])return;
   S.done=true;clearInterval(S.interval);
   document.getElementById('sDone').classList.add('show');
-  document.getElementById('sDoneMsg').textContent=`Thời gian: ${formatTime(S.timer)} • Lỗi: ${S.errors} • Hint: ${S.hints}`;
+  document.getElementById('sDoneMsg').textContent=`Thời gian: ${formatTime(S.timer)} • Lỗi: ${S.errors}`;
   showComplete(S.timer,S.ch);
 }
 
@@ -702,7 +655,6 @@ document.addEventListener('keydown',e=>{
   if(e.key>='1'&&e.key<='9'){sInput(+e.key);return;}
   if(e.key==='Backspace'||e.key==='Delete'){sInput(0);return;}
   if(e.key==='p'||e.key==='P'){setMode(S.pencilMode?'normal':'pencil');return;}
-  if(e.key==='h'||e.key==='H'){useHint();return;}
   const mv={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
   if(mv[e.key]){
     const[dr,dc]=mv[e.key];
@@ -713,11 +665,10 @@ document.addEventListener('keydown',e=>{
 
 // ── SCORE ───────────────────────────────────────────────────
 function showComplete(time,ch){
-  pendingScore={time,ch,name:playerName,dept:playerDept,challengeId:ch.id,errors:S.errors,hints:S.hints};
+  pendingScore={time,ch,name:playerName,dept:playerDept,challengeId:ch.id,errors:S.errors};
   document.getElementById('cResults').innerHTML=`
     <div class="result-row"><span>⏱ Thời gian</span><span class="result-val">${formatTime(time)}</span></div>
     <div class="result-row"><span>❌ Số lỗi</span><span class="result-val">${S.errors}</span></div>
-    <div class="result-row"><span>💡 Hint đã dùng</span><span class="result-val">${S.hints}/3</span></div>
     <div class="result-row"><span>🎮 Ván game</span><span class="result-val">${escH(ch.title)}</span></div>
     <div class="result-row"><span>👤 Người chơi</span><span class="result-val">${escH(playerName)}</span></div>`;
   document.getElementById('sBtnTxt').textContent='Lưu điểm';
@@ -729,7 +680,7 @@ async function submitScore(){
   document.getElementById('sBtnTxt').innerHTML='<span class="spinner"></span>';
   const s=pendingScore;
   try{
-    await fetch(`${_cfg}?action=addScore&key=${_key}&name=${encodeURIComponent(s.name)}&dept=${encodeURIComponent(s.dept||'')}&game=Sudoku&title=${encodeURIComponent(s.ch.title)}&time=${s.time}&challengeId=${s.challengeId}&errors=${s.errors}&hints=${s.hints}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
+    await fetch(`${_cfg}?action=addScore&key=${_key}&name=${encodeURIComponent(s.name)}&dept=${encodeURIComponent(s.dept||'')}&game=Sudoku&title=${encodeURIComponent(s.ch.title)}&time=${s.time}&challengeId=${s.challengeId}&errors=${s.errors}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
     playedChallenges[s.challengeId]={time:s.time};
     localStorage.setItem('bb_played',JSON.stringify(playedChallenges));
     showToast('✅ Điểm đã lưu!','ok');
@@ -747,6 +698,15 @@ async function loadAllLB(){
     const res=await fetch(`${_cfg}?action=getScores&key=${_key}&challengeId=all&_=${Date.now()}`);
     const data=await res.json();
     const scores=data.scores||[];
+
+    // Update stats
+    const totalPlays=scores.length;
+    const uniquePlayers=new Set(scores.map(s=>s.name)).size;
+    const elTP=document.getElementById('lbTotalPlays');
+    const elUP=document.getElementById('lbTotalPlayers');
+    if(elTP)elTP.textContent=totalPlays;
+    if(elUP)elUP.textContent=uniquePlayers;
+
     if(!scores.length){content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">🚀 Chưa có ai hoàn thành. Hãy là người đầu tiên!</div>';return;}
 
     // Group by challengeId
@@ -757,31 +717,48 @@ async function loadAllLB(){
       groups[cid].push(s);
     });
 
-    content.innerHTML='';
+    // Sort each group: time ASC, then errors ASC
+    Object.values(groups).forEach(rows=>{
+      rows.sort((a,b)=>{
+        if(a.time!==b.time)return a.time-b.time;
+        return (a.errors||0)-(b.errors||0);
+      });
+    });
+
+    // Horizontal layout wrapper
+    content.innerHTML='<div id="lbGrid" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>';
+    const grid=document.getElementById('lbGrid');
+
     Object.entries(groups).forEach(([cid,rows])=>{
-      rows.sort((a,b)=>a.time-b.time);
       const ch=challenges.find(c=>String(c.id)===String(cid));
-      const sec=document.createElement('div');sec.className='lb-section';
-      const ri=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      const sec=document.createElement('div');
+      sec.style.cssText='flex:1;min-width:300px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);';
+      const ri=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-family:var(--mono);color:var(--t3)">#${i+1}</span>`;
       sec.innerHTML=`
-        <div class="lb-section-title">
-          <span>${ch?escH(ch.title):'Challenge #'+cid}</span>
-          <span class="lb-ch-tag">#${cid}</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:14px;font-weight:700">${ch?escH(ch.title):'Challenge #'+cid}</span>
+          <span style="background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">#${cid}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--t3)">${rows.length} người</span>
         </div>
-        <table class="lb-table">
-          <thead><tr><th>Hạng</th><th>Tên</th><th>Phòng ban</th><th>Thời gian</th><th>Lỗi</th><th>Hint</th></tr></thead>
-          <tbody>${rows.slice(0,10).map((s,i)=>`
-            <tr class="${s.name===playerName?'me':''}">
-              <td>${ri(i)}</td>
-              <td>${escH(s.name)}${s.name===playerName?'<span class="me-tag">bạn</span>':''}</td>
-              <td style="color:var(--t2)">${escH(s.dept||'—')}</td>
-              <td style="font-family:var(--mono);color:var(--orange);font-weight:500">${formatTime(+s.time)}</td>
-              <td style="color:var(--red)">${s.errors||0}</td>
-              <td style="color:var(--blue)">${s.hints||0}</td>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Hạng</th>
+            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Tên</th>
+            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">TG</th>
+            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Lỗi</th>
+          </tr></thead>
+          <tbody>${rows.map((s,i)=>`
+            <tr style="${s.name===playerName?'color:var(--orange)':''}">
+              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px">${ri(i)}</td>
+              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;font-weight:600">
+                ${escH(s.name)}${s.name===playerName?'<span style="font-size:10px;background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:1px 6px;margin-left:4px">bạn</span>':''}
+              </td>
+              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;font-family:var(--mono);color:var(--orange);font-weight:500">${formatTime(+s.time)}</td>
+              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;color:var(--red);font-weight:700">${s.errors||0}</td>
             </tr>`).join('')}
           </tbody>
         </table>`;
-      content.appendChild(sec);
+      grid.appendChild(sec);
     });
   }catch(e){content.innerHTML=`<div style="text-align:center;padding:40px;color:var(--t3)">❌ Lỗi: ${e.message}</div>`;}
 }
