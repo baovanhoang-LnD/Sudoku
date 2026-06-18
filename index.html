@@ -239,7 +239,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
 <header>
   <div class="logo">
-    <img src="OhM!nd Lab.png" style="height:90px;object-fit:contain">
+    <img src="OhM!nd Lab.png" style="height:80px;object-fit:contain">
   </div>
   <div class="player-chip" id="playerChip" onclick="changePlayer()" style="display:none">
     <div class="chip-av" id="chipAv">?</div>
@@ -278,16 +278,24 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 
   <!-- LEADERBOARD PAGE -->
   <div id="page-lb" class="page">
-    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-      <div class="card" style="flex:1;min-width:140px;margin-bottom:0;text-align:center;padding:18px">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:500;color:var(--orange)" id="lbTotalPlays">—</div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:4px">Tổng lượt chơi</div>
+    <!-- Stats row -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <div class="card" style="flex:1;min-width:130px;margin-bottom:0;text-align:center;padding:16px">
+        <div style="font-family:var(--mono);font-size:26px;font-weight:500;color:var(--orange)" id="lbTotalPlays">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:3px">Tổng lượt chơi</div>
       </div>
-      <div class="card" style="flex:1;min-width:140px;margin-bottom:0;text-align:center;padding:18px">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:500;color:var(--orange)" id="lbTotalPlayers">—</div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:4px">Số người chơi</div>
+      <div class="card" style="flex:1;min-width:130px;margin-bottom:0;text-align:center;padding:16px">
+        <div style="font-family:var(--mono);font-size:26px;font-weight:500;color:var(--orange)" id="lbTotalPlayers">—</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:3px">Số người chơi</div>
       </div>
-      <div style="display:flex;align-items:center;margin-left:auto">
+    </div>
+    <!-- Filter + Refresh -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3)">Chọn ván:</div>
+        <select id="lbFilter" onchange="renderLB()" style="flex:1;min-width:200px;max-width:400px;background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;font-family:var(--sans);font-size:13px;font-weight:600">
+          <option value="all">Tất cả ván</option>
+        </select>
         <button class="btn btn-secondary btn-sm" onclick="loadAllLB()">🔄 Refresh</button>
       </div>
     </div>
@@ -691,76 +699,132 @@ async function submitScore(){
 }
 
 // ── LEADERBOARD (all challenges) ────────────────────────────
+// Penalty per difficulty
+function penaltyScore(time, errors, difficulty){
+  const pen={easy:9, medium:7, hard:5};
+  return (+time) + (+(errors||0)) * (pen[difficulty]||5);
+}
+
+// All scores cache
+let _allScores=[];
+let _allGroups={};
+
 async function loadAllLB(){
   const content=document.getElementById('lbContent');
   content.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><span class="spinner" style="border-color:var(--border);border-top-color:var(--orange);width:28px;height:28px;border-width:3px"></span></div>';
   try{
     const res=await fetch(`${_cfg}?action=getScores&key=${_key}&challengeId=all&_=${Date.now()}`);
     const data=await res.json();
-    const scores=data.scores||[];
+    _allScores=data.scores||[];
 
-    // Update stats
-    const totalPlays=scores.length;
-    const uniquePlayers=new Set(scores.map(s=>s.name)).size;
+    // Update global stats
     const elTP=document.getElementById('lbTotalPlays');
     const elUP=document.getElementById('lbTotalPlayers');
-    if(elTP)elTP.textContent=totalPlays;
-    if(elUP)elUP.textContent=uniquePlayers;
-
-    if(!scores.length){content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">🚀 Chưa có ai hoàn thành. Hãy là người đầu tiên!</div>';return;}
+    if(elTP)elTP.textContent=_allScores.length;
+    if(elUP)elUP.textContent=new Set(_allScores.map(s=>s.name)).size;
 
     // Group by challengeId
-    const groups={};
-    scores.forEach(s=>{
-      const cid=s.challengeId||'?';
-      if(!groups[cid])groups[cid]=[];
-      groups[cid].push(s);
+    _allGroups={};
+    _allScores.forEach(s=>{
+      const cid=String(s.challengeId||'?');
+      if(!_allGroups[cid])_allGroups[cid]=[];
+      _allGroups[cid].push(s);
     });
 
-    // Sort each group: time ASC, then errors ASC
-    Object.values(groups).forEach(rows=>{
-      rows.sort((a,b)=>{
-        if(a.time!==b.time)return a.time-b.time;
-        return (a.errors||0)-(b.errors||0);
-      });
-    });
-
-    // Horizontal layout wrapper
-    content.innerHTML='<div id="lbGrid" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>';
-    const grid=document.getElementById('lbGrid');
-
-    Object.entries(groups).forEach(([cid,rows])=>{
+    // Populate dropdown - newest challenge first (highest ID first)
+    const sel=document.getElementById('lbFilter');
+    // Remove old options except "Tất cả ván"
+    while(sel.options.length>1)sel.remove(1);
+    // Sort challenge IDs descending (newest first)
+    const sortedCids=Object.keys(_allGroups).sort((a,b)=>+b - +a);
+    sortedCids.forEach(cid=>{
       const ch=challenges.find(c=>String(c.id)===String(cid));
-      const sec=document.createElement('div');
-      sec.style.cssText='flex:1;min-width:300px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);';
-      const ri=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-family:var(--mono);color:var(--t3)">#${i+1}</span>`;
-      sec.innerHTML=`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-size:14px;font-weight:700">${ch?escH(ch.title):'Challenge #'+cid}</span>
-          <span style="background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">#${cid}</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--t3)">${rows.length} người</span>
-        </div>
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr>
-            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Hạng</th>
-            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Tên</th>
-            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">TG</th>
-            <th style="text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Lỗi</th>
-          </tr></thead>
-          <tbody>${rows.map((s,i)=>`
-            <tr style="${s.name===playerName?'color:var(--orange)':''}">
-              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px">${ri(i)}</td>
-              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;font-weight:600">
-                ${escH(s.name)}${s.name===playerName?'<span style="font-size:10px;background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:1px 6px;margin-left:4px">bạn</span>':''}
-              </td>
-              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;font-family:var(--mono);color:var(--orange);font-weight:500">${formatTime(+s.time)}</td>
-              <td style="padding:8px 10px;border-bottom:1px solid var(--bg2);font-size:13px;color:var(--red);font-weight:700">${s.errors||0}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>`;
-      grid.appendChild(sec);
+      const titleFromScore=_allGroups[cid]?.[0]?.title||'';
+      const chTitle=ch?.title||titleFromScore||`Challenge #${cid}`;
+      const opt=document.createElement('option');
+      opt.value=cid;
+      opt.textContent=chTitle;
+      sel.appendChild(opt);
     });
+
+    renderLB();
   }catch(e){content.innerHTML=`<div style="text-align:center;padding:40px;color:var(--t3)">❌ Lỗi: ${e.message}</div>`;}
+}
+
+function renderLB(){
+  const content=document.getElementById('lbContent');
+  if(!_allScores.length){
+    content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">🚀 Chưa có ai hoàn thành. Hãy là người đầu tiên!</div>';
+    return;
+  }
+  const filter=document.getElementById('lbFilter')?.value||'all';
+  const ri=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-family:var(--mono);color:var(--t3)">#${i+1}</span>`;
+
+  const renderTable=(rows,ch)=>{
+    const diff=ch?ch.difficulty:'medium';
+    // Sort by penalty score (time + errors*penalty), display real time & errors
+    const sorted=[...rows].sort((a,b)=>penaltyScore(a.time,a.errors,diff)-penaltyScore(b.time,b.errors,diff));
+    return `
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Hạng</th>
+          <th style="text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Tên</th>
+          <th style="text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Phòng ban</th>
+          <th style="text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Thời gian</th>
+          <th style="text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1.5px solid var(--border);font-weight:700">Lỗi</th>
+        </tr></thead>
+        <tbody>${sorted.map((s,i)=>`
+          <tr style="background:${s.name===playerName?'var(--ol)':''}">
+            <td style="padding:10px 12px;border-bottom:1px solid var(--bg2);font-size:13px">${ri(i)}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--bg2);font-size:13px;font-weight:700;color:${s.name===playerName?'var(--orange)':'var(--text)'}">
+              ${escH(s.name)}${s.name===playerName?'<span style="font-size:10px;background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:1px 6px;margin-left:4px;font-weight:700">bạn</span>':''}
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--bg2);font-size:13px;color:var(--t2)">${escH(s.dept||'—')}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--bg2);font-size:13px;font-family:var(--mono);color:var(--orange);font-weight:500">${formatTime(+s.time)}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--bg2);font-size:13px;color:var(--red);font-weight:700">${s.errors||0}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  };
+
+  if(filter==='all'){
+    // Show all challenges - cards side by side
+    const sortedCids=Object.keys(_allGroups).sort((a,b)=>+b - +a);
+    if(!sortedCids.length){content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">🚀 Chưa có ai hoàn thành!</div>';return;}
+    content.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>';
+    const grid=content.querySelector('div');
+    sortedCids.forEach(cid=>{
+      const rows=_allGroups[cid];
+      const ch=challenges.find(c=>String(c.id)===String(cid));
+      const card=document.createElement('div');
+      card.style.cssText='flex:1;min-width:320px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);';
+      card.innerHTML=`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="font-size:15px;font-weight:800">${escH(ch?.title||_allGroups[cid]?.[0]?.title||'Challenge #'+cid)}</span>
+          <span style="background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">#${cid}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--t3);font-weight:600">${rows.length} người chơi</span>
+        </div>
+        ${renderTable(rows,ch)}`;
+      grid.appendChild(card);
+    });
+  }else{
+    // Single challenge view
+    const rows=_allGroups[filter]||[];
+    const ch=challenges.find(c=>String(c.id)===String(filter));
+    if(!rows.length){content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">Chưa có ai chơi ván này.</div>';return;}
+    const diff=ch?ch.difficulty:'medium';
+    const penLabel={easy:'Dễ (+7s/lỗi)',medium:'Vừa (+5s/lỗi)',hard:'Khó (+3s/lỗi)'}[diff]||'';
+    content.innerHTML=`
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+          <span style="font-size:16px;font-weight:800">${escH(ch?.title||(_allGroups[filter]?.[0]?.title)||'Challenge #'+filter)}</span>
+          <span style="background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">#${filter}</span>
+          <span style="font-size:11px;color:var(--t3);font-weight:600">${rows.length} người chơi</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:14px">⚡ Xếp hạng: thời gian thực + penalty lỗi — ${penLabel}</div>
+        ${renderTable(rows,ch)}
+      </div>`;
+  }
 }
 
 // ── HELPERS ─────────────────────────────────────────────────
