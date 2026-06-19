@@ -788,25 +788,26 @@ function renderLB(){
   };
 
   if(filter==='all'){
-    // Show all challenges - cards side by side
-    const sortedCids=Object.keys(_allGroups).sort((a,b)=>+b - +a);
+    // Show all challenges - newest (highest ID) first
+    const sortedCids=Object.keys(_allGroups)
+      .map(cid=>({cid,num:parseInt(cid,10)||0}))
+      .sort((a,b)=>b.num-a.num)
+      .map(x=>x.cid);
     if(!sortedCids.length){content.innerHTML='<div style="text-align:center;padding:48px;color:var(--t3)">🚀 Chưa có ai hoàn thành!</div>';return;}
-    content.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>';
-    const grid=content.querySelector('div');
-    sortedCids.forEach(cid=>{
+    const cardsHtml=sortedCids.map(cid=>{
       const rows=_allGroups[cid];
       const ch=challenges.find(c=>String(c.id)===String(cid));
-      const card=document.createElement('div');
-      card.style.cssText='flex:1;min-width:320px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);';
-      card.innerHTML=`
+      const chTitle=ch?.title||rows[0]?.title||`Challenge #${cid}`;
+      return `<div style="flex:1;min-width:320px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <span style="font-size:15px;font-weight:800">${escH(ch?.title||_allGroups[cid]?.[0]?.title||'Challenge #'+cid)}</span>
+          <span style="font-size:15px;font-weight:800">${escH(chTitle)}</span>
           <span style="background:var(--ol);color:var(--orange);border:1px solid var(--om);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">#${cid}</span>
           <span style="margin-left:auto;font-size:11px;color:var(--t3);font-weight:600">${rows.length} người chơi</span>
         </div>
-        ${renderTable(rows,ch)}`;
-      grid.appendChild(card);
-    });
+        ${renderTable(rows,ch)}
+      </div>`;
+    }).join('');
+    content.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">${cardsHtml}</div>`;
   }else{
     // Single challenge view
     const rows=_allGroups[filter]||[];
