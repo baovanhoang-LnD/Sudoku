@@ -80,6 +80,7 @@ input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(24
 .ch-card.played{border-color:var(--green);background:var(--gl);}
 .ch-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .ch-id{font-family:var(--mono);font-size:11px;color:var(--t3);font-weight:500;}
+.ch-id { display: none; }
 .ch-diff{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
 .diff-easy{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
 .diff-medium{background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
@@ -398,7 +399,6 @@ function renderChallengeList(){
     card.className='ch-card'+(played?' played':'');
     card.innerHTML=`
       <div class="ch-card-top">
-        <span class="ch-id">#${ch.id}</span>
         <span class="ch-diff ${diffClass[ch.difficulty]||'diff-medium'}">${diffLabel[ch.difficulty]||ch.difficulty}</span>
       </div>
       <div class="ch-title">${escH(ch.title)}</div>
