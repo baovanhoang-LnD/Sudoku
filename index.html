@@ -433,7 +433,7 @@ function selectChallenge(ch){
   document.getElementById('gameView').style.display='block';
   document.getElementById('gameTitle').textContent = ch.title;
   const diffLabel={easy:'Dễ',medium:'Vừa',hard:'Khó'};
-  document.getElementById('gameSubtitle').textContent=`Challenge #${ch.id} • ${diffLabel[ch.difficulty]||ch.difficulty}`;
+  document.getElementById('gameSubtitle').textContent=`${diffLabel[ch.difficulty]||ch.difficulty}`;
   initSudoku(ch, document.getElementById('gameArea'));
 }
 
